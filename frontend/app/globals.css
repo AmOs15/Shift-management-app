@@ -1,0 +1,223 @@
+@import "tailwindcss";
+@import "@daypicker/react/style.css";
+
+:root {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+}
+
+body {
+  min-height: 100%;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  overflow-x: hidden;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input {
+  font: inherit;
+  min-width: 0;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+.shift-calendar {
+  --rdp-accent-color: #1d4ed8;
+  --rdp-accent-background-color: #dbeafe;
+  --rdp-day-height: 3rem;
+  --rdp-day-width: 100%;
+  --rdp-day_button-height: 2.75rem;
+  --rdp-day_button-width: 100%;
+  --rdp-day_button-border-radius: 0.5rem;
+  --rdp-selected-border: 2px solid #1d4ed8;
+  margin: 0;
+  width: 100%;
+}
+
+.shift-calendar .rdp-months,
+.shift-calendar .rdp-month,
+.shift-calendar .rdp-month_grid {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.shift-calendar .rdp-month_caption {
+  justify-content: center;
+  margin-bottom: 0.75rem;
+}
+
+.shift-calendar .rdp-caption_label {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.shift-calendar .rdp-nav {
+  inset-inline-end: 0;
+}
+
+.shift-calendar .rdp-weekday {
+  color: #475569;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.shift-calendar .rdp-day {
+  width: 14.285%;
+  height: 3rem;
+}
+
+.shift-calendar .rdp-day_button {
+  height: 2.75rem;
+  width: 100%;
+  border-radius: 0.5rem;
+}
+
+.shift-day-registered .rdp-day_button {
+  position: relative;
+}
+
+.shift-day-registered .rdp-day_button::after {
+  position: absolute;
+  bottom: 0.25rem;
+  left: 50%;
+  width: 0.35rem;
+  height: 0.35rem;
+  content: "";
+  background: #2563eb;
+  border-radius: 9999px;
+  transform: translateX(-50%);
+}
+
+.shift-calendar .rdp-selected .rdp-day_button {
+  background: #1d4ed8;
+  color: #ffffff;
+}
+
+.shift-calendar .rdp-selected.shift-day-registered .rdp-day_button::after {
+  background: #ffffff;
+}
+
+.shift-confirm-calendar {
+  --rdp-accent-color: #1d4ed8;
+  --rdp-accent-background-color: #dbeafe;
+  --rdp-day-height: 5.75rem;
+  --rdp-day-width: 100%;
+  --rdp-day_button-height: 5.5rem;
+  --rdp-day_button-width: 100%;
+  --rdp-day_button-border-radius: 0.5rem;
+  --rdp-selected-border: 2px solid #1d4ed8;
+  margin: 0;
+  width: 100%;
+}
+
+.shift-confirm-calendar .rdp-months,
+.shift-confirm-calendar .rdp-month,
+.shift-confirm-calendar .rdp-month_grid {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.shift-confirm-calendar .rdp-month_caption {
+  justify-content: center;
+  margin-bottom: 0.75rem;
+}
+
+.shift-confirm-calendar .rdp-caption_label {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.shift-confirm-calendar .rdp-nav {
+  inset-inline-end: 0;
+}
+
+.shift-confirm-calendar .rdp-weekday {
+  color: #475569;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.shift-confirm-calendar .rdp-day {
+  width: 14.285%;
+  height: 5.75rem;
+  vertical-align: top;
+}
+
+.shift-confirm-calendar .rdp-day_button {
+  width: 100%;
+  height: 5.5rem;
+  border-radius: 0.5rem;
+}
+
+.shift-confirm-scroll {
+  margin-right: -1rem;
+  margin-left: -1rem;
+  overflow-x: auto;
+  padding-right: 1rem;
+  padding-left: 1rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+.shift-confirm-scroll-inner {
+  min-width: 40rem;
+}
+
+@media (max-width: 480px) {
+  .shift-calendar {
+    --rdp-day-height: 2.625rem;
+    --rdp-day_button-height: 2.375rem;
+  }
+
+  .shift-calendar .rdp-caption_label,
+  .shift-confirm-calendar .rdp-caption_label {
+    font-size: 0.95rem;
+  }
+
+  .shift-calendar .rdp-weekday,
+  .shift-confirm-calendar .rdp-weekday {
+    font-size: 0.7rem;
+  }
+
+  .shift-calendar .rdp-day {
+    height: 2.625rem;
+  }
+
+  .shift-calendar .rdp-day_button {
+    height: 2.375rem;
+    font-size: 0.875rem;
+  }
+}
+
+@media (min-width: 640px) {
+  .shift-confirm-scroll {
+    margin-right: 0;
+    margin-left: 0;
+    padding-right: 0;
+    padding-left: 0;
+  }
+
+  .shift-confirm-scroll-inner {
+    min-width: 0;
+  }
+}
