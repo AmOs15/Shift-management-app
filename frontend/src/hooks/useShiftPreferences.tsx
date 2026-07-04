@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -40,6 +41,7 @@ function sortShifts(shifts: ShiftPreference[]) {
 export function ShiftPreferencesProvider({ children }: { children: ReactNode }) {
   const [loadState, setLoadState] = useState<LoadState>("loading");
   const [shifts, setShifts] = useState<ShiftPreference[]>([]);
+  const shiftsRef = useRef<ShiftPreference[]>([]);
 
   useEffect(() => {
     const storedShifts = readSessionJson<ShiftPreference[]>(
@@ -47,51 +49,57 @@ export function ShiftPreferencesProvider({ children }: { children: ReactNode }) 
       isShiftPreferenceArray,
       [],
     );
+    const sortedShifts = sortShifts(storedShifts);
 
-    setShifts(sortShifts(storedShifts));
+    shiftsRef.current = sortedShifts;
+    setShifts(sortedShifts);
     setLoadState("ready");
   }, []);
 
   const persistShifts = useCallback((nextShifts: ShiftPreference[]) => {
     const sortedShifts = sortShifts(nextShifts);
+    shiftsRef.current = sortedShifts;
     setShifts(sortedShifts);
     writeSessionJson(SHIFT_STORAGE_KEY, sortedShifts);
   }, []);
 
   const getShiftByDate = useCallback(
-    (date: string) => shifts.find((shift) => shift.date === date),
-    [shifts],
+    (date: string) => shiftsRef.current.find((shift) => shift.date === date),
+    [],
   );
 
   const upsertShift = useCallback(
     (date: string, startTime: string, endTime: string): SaveResult => {
       const nextShift = createShiftPreference(date, startTime, endTime);
-      const exists = shifts.some((shift) => shift.date === date);
+      const currentShifts = shiftsRef.current;
+      const exists = currentShifts.some((shift) => shift.date === date);
       const nextShifts = exists
-        ? shifts.map((shift) => (shift.date === date ? nextShift : shift))
-        : [...shifts, nextShift];
+        ? currentShifts.map((shift) => (shift.date === date ? nextShift : shift))
+        : [...currentShifts, nextShift];
 
       persistShifts(nextShifts);
       return exists ? "updated" : "created";
     },
-    [persistShifts, shifts],
+    [persistShifts],
   );
 
   const deleteShift = useCallback(
     (date: string) => {
-      const exists = shifts.some((shift) => shift.date === date);
+      const currentShifts = shiftsRef.current;
+      const exists = currentShifts.some((shift) => shift.date === date);
 
       if (!exists) {
         return false;
       }
 
-      persistShifts(shifts.filter((shift) => shift.date !== date));
+      persistShifts(currentShifts.filter((shift) => shift.date !== date));
       return true;
     },
-    [persistShifts, shifts],
+    [persistShifts],
   );
 
   const resetShifts = useCallback(() => {
+    shiftsRef.current = [];
     setShifts([]);
     removeSessionValue(SHIFT_STORAGE_KEY);
   }, []);

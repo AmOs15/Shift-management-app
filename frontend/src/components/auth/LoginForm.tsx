@@ -62,31 +62,31 @@ export function LoginForm() {
   if (loadState === "loading" || isAuthenticated) {
     return (
       <main className="flex min-h-screen items-center justify-center px-4 py-8">
-        <p className="text-sm text-slate-600">
-          {isAuthenticated ? "メニューへ移動しています..." : "読み込み中..."}
+        <p className="text-sm text-[var(--text-secondary)]">
+          {isAuthenticated ? "ホームへ移動しています..." : "読み込み中..."}
         </p>
       </main>
     );
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center px-4 py-8">
+    <main className="flex min-h-screen items-center justify-center bg-[var(--bg-page)] px-4 py-8">
       <Card className="w-full max-w-md p-6">
         <div className="mb-6">
-          <p className="text-sm font-semibold text-blue-700">シフト希望</p>
-          <h1 className="mt-2 text-2xl font-bold text-slate-950">
+          <p className="text-sm font-black text-[var(--accent-600)]">シフト希望</p>
+          <h1 className="mt-2 text-2xl font-black tracking-tight text-[var(--text-primary)]">
             シフト希望入力モック
           </h1>
         </div>
 
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-800" htmlFor="name">
+            <label className="text-sm font-bold text-[var(--text-primary)]" htmlFor="name">
               氏名
             </label>
             <input
               autoComplete="name"
-              className="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-950 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+              className="min-h-11 w-full rounded-xl border-0 bg-[var(--bg-page)] px-3 py-2 text-[var(--text-primary)] outline-none transition focus:ring-2 focus:ring-[var(--accent-500)]"
               id="name"
               name="name"
               onChange={(event) => setName(event.target.value)}
@@ -96,12 +96,15 @@ export function LoginForm() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-800" htmlFor="password">
+            <label
+              className="text-sm font-bold text-[var(--text-primary)]"
+              htmlFor="password"
+            >
               パスワード
             </label>
             <input
               autoComplete="current-password"
-              className="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-950 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+              className="min-h-11 w-full rounded-xl border-0 bg-[var(--bg-page)] px-3 py-2 text-[var(--text-primary)] outline-none transition focus:ring-2 focus:ring-[var(--accent-500)]"
               id="password"
               name="password"
               onChange={(event) => setPassword(event.target.value)}
@@ -117,8 +120,8 @@ export function LoginForm() {
           </Button>
         </form>
 
-        <div className="mt-6 rounded-lg bg-slate-50 p-4 text-sm text-slate-600">
-          <p className="font-semibold text-slate-800">デモ用アカウント</p>
+        <div className="mt-6 rounded-2xl bg-[var(--bg-page)] p-4 text-sm text-[var(--text-secondary)]">
+          <p className="font-bold text-[var(--text-primary)]">デモ用アカウント</p>
           <p className="mt-2">氏名：{MOCK_USER.name}</p>
           <p>パスワード：{MOCK_USER.password}</p>
         </div>

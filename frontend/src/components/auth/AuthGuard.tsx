@@ -18,7 +18,9 @@ export function AuthGuard({ children }: { children: ReactNode }) {
   if (loadState === "loading" || !isAuthenticated) {
     return (
       <main className="flex min-h-screen items-center justify-center px-4 py-8">
-        <p className="text-sm text-slate-600">認証状態を確認しています...</p>
+        <p className="text-sm text-[var(--text-secondary)]">
+          認証状態を確認しています...
+        </p>
       </main>
     );
   }

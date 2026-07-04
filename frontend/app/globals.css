@@ -2,20 +2,35 @@
 @import "@daypicker/react/style.css";
 
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
-  --shift-availability-short-bg: #f0f9ff;
-  --shift-availability-short-border: #bae6fd;
-  --shift-availability-short-text: #0c4a6e;
-  --shift-availability-short-hover: #e0f2fe;
-  --shift-availability-middle-bg: #bae6fd;
-  --shift-availability-middle-border: #7dd3fc;
-  --shift-availability-middle-text: #0c4a6e;
-  --shift-availability-middle-hover: #7dd3fc;
-  --shift-availability-long-bg: #0369a1;
-  --shift-availability-long-border: #0369a1;
+  --background: #f7f8fb;
+  --foreground: #14151a;
+  --bg-page: #f7f8fb;
+  --bg-card: #ffffff;
+  --border-subtle: #e7e9f0;
+  --text-primary: #14151a;
+  --text-secondary: #6b7080;
+  --text-tertiary: #a0a4b2;
+  --accent-100: #eceeff;
+  --accent-500: #4f5dff;
+  --accent-600: #3e4ae0;
+  --sat-color: #3b82f6;
+  --sun-color: #f43f5e;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --shift-availability-short-bg: #e6f0ff;
+  --shift-availability-short-border: #cfdcff;
+  --shift-availability-short-text: #23306d;
+  --shift-availability-short-hover: #dce8ff;
+  --shift-availability-middle-bg: #8fb6ff;
+  --shift-availability-middle-border: #6d99f3;
+  --shift-availability-middle-text: #111b46;
+  --shift-availability-middle-hover: #7ca6f7;
+  --shift-availability-long-bg: #4f5dff;
+  --shift-availability-long-border: #3e4ae0;
   --shift-availability-long-text: #ffffff;
-  --shift-availability-long-hover: #075985;
+  --shift-availability-long-hover: #3e4ae0;
+  --shadow-card: 0 1px 2px rgba(20, 21, 26, 0.04), 0 12px 28px rgba(20, 21, 26, 0.05);
+  --shadow-floating: 0 24px 80px rgba(20, 21, 26, 0.2);
 }
 
 * {
@@ -30,9 +45,10 @@ body {
   min-height: 100%;
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-jp), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   margin: 0;
   overflow-x: hidden;
+  text-rendering: optimizeLegibility;
 }
 
 a {
@@ -41,28 +57,118 @@ a {
 }
 
 button,
-input {
+input,
+select {
   font: inherit;
   min-width: 0;
 }
 
 button {
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
 button:disabled {
   cursor: not-allowed;
 }
 
+@keyframes sheet-up {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.font-numeric {
+  font-family: var(--font-num), var(--font-jp), system-ui, sans-serif;
+  font-feature-settings: "tnum";
+}
+
+.app-card {
+  background: var(--bg-card);
+  border-color: var(--border-subtle);
+  box-shadow: var(--shadow-card);
+}
+
+.app-button-primary {
+  background: linear-gradient(135deg, var(--accent-500), var(--accent-600));
+  border-color: transparent;
+  color: #ffffff;
+  box-shadow: 0 8px 18px rgba(79, 93, 255, 0.22);
+}
+
+.app-button-primary:hover {
+  filter: brightness(0.98);
+}
+
+.app-button-secondary {
+  background: var(--bg-card);
+  border-color: var(--border-subtle);
+  color: var(--text-primary);
+}
+
+.app-button-secondary:hover {
+  background: var(--bg-page);
+}
+
+.app-button-danger {
+  background: #f43f5e;
+  border-color: #f43f5e;
+  color: #ffffff;
+}
+
+.app-button-danger:hover {
+  background: #e11d48;
+  border-color: #e11d48;
+}
+
+.app-button-ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-secondary);
+}
+
+.app-button-ghost:hover {
+  background: var(--accent-100);
+  color: var(--accent-600);
+}
+
+.app-button-primary:active,
+.app-button-secondary:active,
+.app-button-danger:active,
+.app-button-ghost:active,
+.shift-confirm-calendar .rdp-day_button:active,
+.shift-preset-button:active,
+.bottom-mode-button:active {
+  transform: scale(0.98);
+}
+
 .shift-calendar {
-  --rdp-accent-color: #1d4ed8;
-  --rdp-accent-background-color: #dbeafe;
+  --rdp-accent-color: var(--accent-500);
+  --rdp-accent-background-color: var(--accent-100);
   --rdp-day-height: 3rem;
   --rdp-day-width: 100%;
   --rdp-day_button-height: 2.75rem;
   --rdp-day_button-width: 100%;
   --rdp-day_button-border-radius: 0.5rem;
-  --rdp-selected-border: 2px solid #1d4ed8;
+  --rdp-selected-border: 2px solid var(--accent-500);
   margin: 0;
   width: 100%;
 }
@@ -116,13 +222,13 @@ button:disabled {
   width: 0.35rem;
   height: 0.35rem;
   content: "";
-  background: #2563eb;
+  background: var(--accent-500);
   border-radius: 9999px;
   transform: translateX(-50%);
 }
 
 .shift-calendar .rdp-selected .rdp-day_button {
-  background: #1d4ed8;
+  background: linear-gradient(135deg, var(--accent-500), var(--accent-600));
   color: #ffffff;
 }
 
@@ -131,14 +237,14 @@ button:disabled {
 }
 
 .shift-confirm-calendar {
-  --rdp-accent-color: #1d4ed8;
-  --rdp-accent-background-color: #dbeafe;
-  --rdp-day-height: 5.75rem;
+  --rdp-accent-color: var(--accent-500);
+  --rdp-accent-background-color: var(--accent-100);
+  --rdp-day-height: 4.25rem;
   --rdp-day-width: 100%;
-  --rdp-day_button-height: 5.5rem;
+  --rdp-day_button-height: 4rem;
   --rdp-day_button-width: 100%;
-  --rdp-day_button-border-radius: 0.5rem;
-  --rdp-selected-border: 2px solid #1d4ed8;
+  --rdp-day_button-border-radius: 0.875rem;
+  --rdp-selected-border: 2px solid var(--accent-500);
   margin: 0;
   width: 100%;
 }
@@ -148,55 +254,96 @@ button:disabled {
 .shift-confirm-calendar .rdp-month_grid {
   width: 100%;
   table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0.25rem;
 }
 
 .shift-confirm-calendar .rdp-month_caption {
   justify-content: center;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.875rem;
 }
 
 .shift-confirm-calendar .rdp-caption_label {
-  font-size: 1rem;
-  font-weight: 700;
+  color: var(--text-primary);
+  font-size: 1.1rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
 }
 
 .shift-confirm-calendar .rdp-nav {
   inset-inline-end: 0;
+  gap: 0.35rem;
+}
+
+.shift-confirm-calendar .rdp-button_previous,
+.shift-confirm-calendar .rdp-button_next {
+  width: 2rem;
+  height: 2rem;
+  background: var(--bg-page);
+  border-radius: 9999px;
+  color: var(--text-secondary);
+  transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+
+.shift-confirm-calendar .rdp-button_previous:hover,
+.shift-confirm-calendar .rdp-button_next:hover {
+  background: var(--accent-100);
+  color: var(--accent-600);
 }
 
 .shift-confirm-calendar .rdp-weekday {
-  color: #475569;
+  background: var(--bg-page);
+  color: var(--text-secondary);
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 800;
+}
+
+.shift-confirm-calendar .rdp-weekday:first-child {
+  border-radius: 0.75rem 0 0 0.75rem;
+}
+
+.shift-confirm-calendar .rdp-weekday:last-child {
+  border-radius: 0 0.75rem 0.75rem 0;
 }
 
 .shift-confirm-calendar .rdp-day {
   width: 14.285%;
-  height: 5.75rem;
+  height: 4.25rem;
   vertical-align: top;
 }
 
 .shift-confirm-calendar .rdp-day_button {
   width: 100%;
-  height: 5.5rem;
-  border-radius: 0.5rem;
+  height: 4rem;
+  border: 1px solid transparent;
+  border-radius: 0.875rem;
+  box-shadow: inset 0 0 0 1px rgba(231, 233, 240, 0.7);
+  transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, color 0.15s ease, transform 0.15s ease;
 }
 
 .shift-confirm-calendar .rdp-day_button[data-weekday="0"]:not([data-shift-level]) {
-  color: #dc2626;
+  color: var(--sun-color);
 }
 
 .shift-confirm-calendar .rdp-day_button[data-weekday="6"]:not([data-shift-level]) {
-  color: #2563eb;
+  color: var(--sat-color);
 }
 
 .shift-confirm-calendar .rdp-day_button[data-outside-month="true"]:not([data-shift-level]) {
-  background: #f8fafc;
-  color: #94a3b8;
+  background: var(--bg-page);
+  color: var(--text-tertiary);
+}
+
+.shift-confirm-calendar .rdp-day_button[data-today="true"]:not([data-shift-level]):not(:disabled) {
+  background: var(--accent-100);
+  border-color: var(--accent-500);
+  box-shadow: inset 0 0 0 1px var(--accent-500);
+  color: var(--accent-600);
+  font-weight: 800;
 }
 
 .shift-confirm-calendar .rdp-day_button[data-shift-level="short"] {
-  background: var(--shift-availability-short-bg);
+  background: linear-gradient(135deg, var(--shift-availability-short-bg), #f8fbff);
   border-color: var(--shift-availability-short-border);
   color: var(--shift-availability-short-text);
 }
@@ -206,7 +353,7 @@ button:disabled {
 }
 
 .shift-confirm-calendar .rdp-day_button[data-shift-level="middle"] {
-  background: var(--shift-availability-middle-bg);
+  background: linear-gradient(135deg, var(--shift-availability-middle-bg), #d8e6ff);
   border-color: var(--shift-availability-middle-border);
   color: var(--shift-availability-middle-text);
 }
@@ -216,9 +363,10 @@ button:disabled {
 }
 
 .shift-confirm-calendar .rdp-day_button[data-shift-level="long"] {
-  background: var(--shift-availability-long-bg);
+  background: linear-gradient(135deg, var(--shift-availability-long-bg), var(--accent-600));
   border-color: var(--shift-availability-long-border);
   color: var(--shift-availability-long-text);
+  box-shadow: 0 8px 18px rgba(79, 93, 255, 0.18);
 }
 
 .shift-confirm-calendar .rdp-day_button[data-shift-level="long"]:hover {
@@ -226,15 +374,37 @@ button:disabled {
 }
 
 .shift-confirm-calendar .rdp-selected .rdp-day_button[data-shift-level] {
-  box-shadow: inset 0 0 0 2px #1d4ed8;
+  box-shadow: inset 0 0 0 2px var(--accent-600), 0 8px 18px rgba(79, 93, 255, 0.18);
+}
+
+.shift-confirm-calendar .rdp-selected .rdp-day_button:not(:disabled) {
+  background: linear-gradient(135deg, var(--accent-500), var(--accent-600));
+  border-color: var(--accent-600);
+  color: #ffffff;
+  box-shadow: 0 10px 24px rgba(79, 93, 255, 0.25);
+}
+
+.shift-confirm-calendar .rdp-day_button:disabled {
+  background: var(--bg-page);
+  border-color: transparent;
+  color: #c6cada;
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+.shift-confirm-calendar .rdp-day_button:disabled[data-shift-level] {
+  background: #f0f2f7;
+  border-color: var(--border-subtle);
+  color: var(--text-secondary);
 }
 
 .shift-availability-swatch {
   display: inline-block;
-  width: 1rem;
-  height: 1rem;
+  width: 0.55rem;
+  height: 0.55rem;
   border: 1px solid transparent;
-  border-radius: 0.25rem;
+  border-radius: 9999px;
+  box-shadow: 0 0 0 3px rgba(79, 93, 255, 0.05);
 }
 
 .shift-availability-swatch-short {
@@ -259,8 +429,8 @@ button:disabled {
   }
 
   .shift-confirm-calendar {
-    --rdp-day-height: 4.75rem;
-    --rdp-day_button-height: 4.5rem;
+    --rdp-day-height: 3.25rem;
+    --rdp-day_button-height: 3rem;
   }
 
   .shift-calendar .rdp-caption_label,
@@ -283,10 +453,10 @@ button:disabled {
   }
 
   .shift-confirm-calendar .rdp-day {
-    height: 4.75rem;
+    height: 3.25rem;
   }
 
   .shift-confirm-calendar .rdp-day_button {
-    height: 4.5rem;
+    height: 3rem;
   }
 }

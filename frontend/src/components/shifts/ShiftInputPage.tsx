@@ -35,8 +35,10 @@ export function ShiftInputPage({ initialDate }: { initialDate: string | null }) 
   return (
     <div className="space-y-5 sm:space-y-6">
       <div>
-        <h1 className="text-xl font-bold text-slate-950 sm:text-2xl">シフト入力</h1>
-        <p className="mt-2 text-sm text-slate-600">
+        <h1 className="text-xl font-black tracking-tight text-[var(--text-primary)] sm:text-2xl">
+          シフト入力
+        </h1>
+        <p className="mt-2 text-sm text-[var(--text-secondary)]">
           カレンダーから日付を選び、勤務可能な時間を登録します。
         </p>
       </div>
@@ -46,7 +48,9 @@ export function ShiftInputPage({ initialDate }: { initialDate: string | null }) 
       <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,1fr)_390px] lg:gap-6">
         <Card className="min-w-0 p-3 sm:p-6">
           {loadState === "loading" ? (
-            <p className="text-sm text-slate-600">シフト情報を読み込んでいます...</p>
+            <p className="text-sm text-[var(--text-secondary)]">
+              シフト情報を読み込んでいます...
+            </p>
           ) : (
             <ShiftCalendar
               disabledPast

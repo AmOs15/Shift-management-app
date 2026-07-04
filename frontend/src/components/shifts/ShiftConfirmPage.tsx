@@ -22,10 +22,10 @@ export function ShiftConfirmPage() {
   return (
     <div className="space-y-5 sm:space-y-6">
       <div>
-        <h1 className="text-xl font-bold text-slate-950 sm:text-2xl">
+        <h1 className="text-xl font-black tracking-tight text-[var(--text-primary)] sm:text-2xl">
           提出内容の確認
         </h1>
-        <p className="mt-2 text-sm text-slate-600">
+        <p className="mt-2 text-sm text-[var(--text-secondary)]">
           登録済みのシフト希望をカレンダーで確認できます。
         </p>
       </div>
@@ -38,7 +38,7 @@ export function ShiftConfirmPage() {
         <Message>
           <span className="block font-semibold">シフト希望はまだ登録されていません。</span>
           <Link
-            className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-lg border border-blue-700 bg-blue-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700 sm:w-auto"
+            className="app-button-primary mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-xl border px-4 py-2 text-sm font-bold transition duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent-500)] sm:w-auto"
             href="/shifts/input"
           >
             シフトを入力する

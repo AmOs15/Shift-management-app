@@ -4,6 +4,7 @@ import { DayPicker, type DayButtonProps } from "@daypicker/react";
 import { ja } from "@daypicker/react/locale";
 import {
   formatLongDate,
+  getTodayKey,
   parseLocalDateKey,
   toLocalDateKey,
 } from "@/lib/date";
@@ -29,28 +30,30 @@ function ConfirmDayButton({
   const availabilityLevel = getShiftAvailabilityLevel(durationMinutes);
   const hasShift = availabilityLevel !== "none";
   const isOutsideMonth = Boolean(modifiers.outside);
+  const isToday = Boolean(modifiers.today);
 
   return (
     <button
       className={[
         className,
-        "flex min-h-[4.5rem] w-full flex-col items-start justify-start overflow-hidden rounded-lg border p-1 text-left leading-tight transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700 sm:min-h-20 sm:p-2",
+        "flex min-h-12 w-full flex-col items-center justify-center overflow-hidden rounded-[0.875rem] border p-1 text-center leading-tight transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent-500)] sm:min-h-16 sm:p-2",
         hasShift
           ? "shift-confirm-day"
-          : "border-transparent bg-white text-slate-700 hover:bg-slate-50",
+          : "border-transparent bg-[var(--bg-card)] text-[var(--text-primary)] hover:bg-[var(--accent-100)]",
       ].join(" ")}
       data-outside-month={isOutsideMonth ? "true" : undefined}
       data-shift-date={dateKey}
       data-shift-level={hasShift ? availabilityLevel : undefined}
+      data-today={isToday ? "true" : undefined}
       data-weekday={day.date.getDay()}
       {...buttonProps}
     >
-      <span className="block w-full text-xs font-bold sm:text-sm">
+      <span className="block w-full text-center text-sm font-black sm:text-base">
         {day.date.getDate()}
       </span>
       {hasShift ? (
         <>
-          <span className="mt-auto hidden w-full truncate text-[11px] font-semibold sm:block">
+          <span className="mt-0.5 hidden w-full truncate text-center text-[11px] font-semibold sm:block">
             {formatDurationHoursCompact(durationMinutes)}
           </span>
           <span className="sr-only">登録済み、合計{formatDuration(durationMinutes)}</span>
@@ -61,26 +64,36 @@ function ConfirmDayButton({
 }
 
 export function ShiftConfirmCalendar({
+  ariaLabel = "登録済みシフト希望カレンダー",
+  disabledPast = false,
+  month,
   onSelectDate,
+  onMonthChange,
   selectedDate,
   shifts,
 }: {
+  ariaLabel?: string;
+  disabledPast?: boolean;
+  month?: Date;
   onSelectDate: (date: string) => void;
+  onMonthChange?: (month: Date) => void;
   selectedDate: string | null;
   shifts: ShiftPreference[];
 }) {
   const durationByDate = aggregateShiftDurationByDate(shifts);
   const selected = selectedDate ? parseLocalDateKey(selectedDate) : undefined;
+  const today = parseLocalDateKey(getTodayKey());
 
   return (
     <DayPicker
-      aria-label="登録済みシフト希望カレンダー"
+      aria-label={ariaLabel}
       className="shift-confirm-calendar"
       components={{
         DayButton: (props) => (
           <ConfirmDayButton {...props} durationByDate={durationByDate} />
         ),
       }}
+      disabled={disabledPast ? { before: today } : undefined}
       fixedWeeks
       formatters={{
         formatCaption: (month) => `${month.getFullYear()}年${month.getMonth() + 1}月`,
@@ -109,6 +122,8 @@ export function ShiftConfirmCalendar({
       }}
       locale={ja}
       mode="single"
+      month={month}
+      onMonthChange={onMonthChange}
       onSelect={(date) => {
         if (date) {
           onSelectDate(toLocalDateKey(date));
