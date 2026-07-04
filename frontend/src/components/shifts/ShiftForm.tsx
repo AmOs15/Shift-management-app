@@ -15,6 +15,9 @@ import { ShiftPresetButtons } from "@/components/shifts/ShiftPresetButtons";
 
 type SaveResult = "created" | "updated";
 
+const HOUR_OPTIONS = Array.from({ length: 12 }, (_, index) => index + 9);
+const MINUTE_OPTIONS = [0, 15, 30, 45];
+
 type ShiftFormProps = {
   existingShift: ShiftPreference | undefined;
   onCancel: () => void;
@@ -22,6 +25,93 @@ type ShiftFormProps = {
   onSave: (date: string, startTime: string, endTime: string) => SaveResult;
   selectedDate: string | null;
 };
+
+function pad2(value: number) {
+  return String(value).padStart(2, "0");
+}
+
+function formatTimeValue(hour: number, minute: number) {
+  return `${pad2(hour)}:${pad2(minute)}`;
+}
+
+function splitTimeValue(time: string) {
+  const [hour, minute] = time.split(":").map(Number);
+  return { hour, minute };
+}
+
+function getMinuteOptions(hour: number) {
+  return hour === 20 ? [0] : MINUTE_OPTIONS;
+}
+
+function TimeSelect({
+  idPrefix,
+  label,
+  onChange,
+  value,
+}: {
+  idPrefix: string;
+  label: string;
+  onChange: (time: string) => void;
+  value: string;
+}) {
+  const { hour, minute } = splitTimeValue(value);
+  const minuteOptions = getMinuteOptions(hour);
+
+  function handleHourChange(nextHourValue: string) {
+    const nextHour = Number(nextHourValue);
+    const nextMinuteOptions = getMinuteOptions(nextHour);
+    const nextMinute = nextMinuteOptions.includes(minute)
+      ? minute
+      : nextMinuteOptions[0];
+
+    onChange(formatTimeValue(nextHour, nextMinute));
+  }
+
+  function handleMinuteChange(nextMinuteValue: string) {
+    onChange(formatTimeValue(hour, Number(nextMinuteValue)));
+  }
+
+  return (
+    <fieldset className="space-y-2">
+      <legend className="text-sm font-semibold text-slate-800">{label}</legend>
+      <div className="grid grid-cols-[1fr_auto_1fr_auto] items-center gap-2">
+        <label className="sr-only" htmlFor={`${idPrefix}-hour`}>
+          {label} 時
+        </label>
+        <select
+          className="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-950 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+          id={`${idPrefix}-hour`}
+          onChange={(event) => handleHourChange(event.target.value)}
+          value={hour}
+        >
+          {HOUR_OPTIONS.map((hourOption) => (
+            <option key={hourOption} value={hourOption}>
+              {hourOption}
+            </option>
+          ))}
+        </select>
+        <span className="text-sm font-semibold text-slate-600">時</span>
+
+        <label className="sr-only" htmlFor={`${idPrefix}-minute`}>
+          {label} 分
+        </label>
+        <select
+          className="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-950 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+          id={`${idPrefix}-minute`}
+          onChange={(event) => handleMinuteChange(event.target.value)}
+          value={minuteOptions.includes(minute) ? minute : minuteOptions[0]}
+        >
+          {minuteOptions.map((minuteOption) => (
+            <option key={minuteOption} value={minuteOption}>
+              {pad2(minuteOption)}
+            </option>
+          ))}
+        </select>
+        <span className="text-sm font-semibold text-slate-600">分</span>
+      </div>
+    </fieldset>
+  );
+}
 
 export function ShiftForm({
   existingShift,
@@ -88,6 +178,12 @@ export function ShiftForm({
     onSave(selectedDate, nextStartTime, nextEndTime);
   }
 
+  function applyPresetTimes(nextStartTime: string, nextEndTime: string) {
+    setStartTime(nextStartTime);
+    setEndTime(nextEndTime);
+    setErrorMessage(null);
+  }
+
   function handleDelete() {
     if (!selectedDate) {
       return;
@@ -127,45 +223,25 @@ export function ShiftForm({
 
       <div className="space-y-5">
         <div className="grid min-w-0 gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <label
-              className="text-sm font-semibold text-slate-800"
-              htmlFor="shift-start-time"
-            >
-              開始時刻
-            </label>
-            <input
-              className="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-950 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
-              id="shift-start-time"
-              onChange={(event) => {
-                setStartTime(event.target.value);
-                setErrorMessage(null);
-              }}
-              step={1800}
-              type="time"
-              value={startTime}
-            />
-          </div>
+          <TimeSelect
+            idPrefix="shift-start-time"
+            label="開始時刻"
+            onChange={(nextTime) => {
+              setStartTime(nextTime);
+              setErrorMessage(null);
+            }}
+            value={startTime}
+          />
 
-          <div className="space-y-2">
-            <label
-              className="text-sm font-semibold text-slate-800"
-              htmlFor="shift-end-time"
-            >
-              終了時刻
-            </label>
-            <input
-              className="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-950 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
-              id="shift-end-time"
-              onChange={(event) => {
-                setEndTime(event.target.value);
-                setErrorMessage(null);
-              }}
-              step={1800}
-              type="time"
-              value={endTime}
-            />
-          </div>
+          <TimeSelect
+            idPrefix="shift-end-time"
+            label="終了時刻"
+            onChange={(nextTime) => {
+              setEndTime(nextTime);
+              setErrorMessage(null);
+            }}
+            value={endTime}
+          />
         </div>
 
         <p className="text-sm font-semibold text-slate-700">
@@ -175,10 +251,15 @@ export function ShiftForm({
         {visibleError ? <Message variant="error">{visibleError}</Message> : null}
 
         <div className="space-y-3">
-          <p className="text-sm font-semibold text-slate-800">時間プリセット</p>
+          <div>
+            <p className="text-sm font-semibold text-slate-800">時間プリセット</p>
+            <p className="mt-1 text-xs text-slate-500">
+              入力欄に時間を反映します。登録には保存ボタンを押してください。
+            </p>
+          </div>
           <ShiftPresetButtons
             onSelectPreset={(nextStartTime, nextEndTime) => {
-              saveCurrentTimes(nextStartTime, nextEndTime);
+              applyPresetTimes(nextStartTime, nextEndTime);
             }}
           />
         </div>

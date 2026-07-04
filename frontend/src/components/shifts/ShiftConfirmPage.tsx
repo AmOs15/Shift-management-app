@@ -46,17 +46,13 @@ export function ShiftConfirmPage() {
         </Message>
       ) : null}
 
-      <Card className="space-y-5 p-4 sm:p-6">
+      <Card className="space-y-4 p-2 sm:space-y-5 sm:p-6">
         <ShiftDurationLegend />
-        <div className="shift-confirm-scroll">
-          <div className="shift-confirm-scroll-inner">
-            <ShiftConfirmCalendar
-              onSelectDate={setSelectedDate}
-              selectedDate={selectedDate}
-              shifts={sortedShifts}
-            />
-          </div>
-        </div>
+        <ShiftConfirmCalendar
+          onSelectDate={setSelectedDate}
+          selectedDate={selectedDate}
+          shifts={sortedShifts}
+        />
       </Card>
 
       <ShiftDetailDialog

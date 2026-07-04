@@ -8,60 +8,52 @@ import {
   toLocalDateKey,
 } from "@/lib/date";
 import {
+  aggregateShiftDurationByDate,
   formatDuration,
-  formatDurationCompact,
-  formatTimeRangeCompact,
-  getShiftDurationTone,
-  type ShiftDurationTone,
+  formatDurationHoursCompact,
+  getShiftAvailabilityLevel,
 } from "@/lib/shift";
 import type { ShiftPreference } from "@/types/shift";
 
 const weekdayLabels = ["日", "月", "火", "水", "木", "金", "土"] as const;
 
-const toneClassNames: Record<ShiftDurationTone, string> = {
-  short: "border-sky-200 bg-sky-50 text-sky-950 hover:bg-sky-100",
-  medium: "border-sky-300 bg-sky-200 text-sky-950 hover:bg-sky-300",
-  long: "border-sky-700 bg-sky-700 text-white hover:bg-sky-800",
-};
-
 function ConfirmDayButton({
-  shiftsByDate,
+  durationByDate,
   ...props
 }: DayButtonProps & {
-  shiftsByDate: Map<string, ShiftPreference>;
+  durationByDate: Map<string, number>;
 }) {
   const { className = "", day, modifiers, ...buttonProps } = props;
   const dateKey = toLocalDateKey(day.date);
-  const shift = shiftsByDate.get(dateKey);
-  const tone = shift ? getShiftDurationTone(shift.durationMinutes) : null;
+  const durationMinutes = durationByDate.get(dateKey) ?? 0;
+  const availabilityLevel = getShiftAvailabilityLevel(durationMinutes);
+  const hasShift = availabilityLevel !== "none";
+  const isOutsideMonth = Boolean(modifiers.outside);
 
   return (
     <button
       className={[
         className,
-        "flex min-h-20 w-full flex-col items-start justify-start rounded-lg border p-2 text-left text-xs transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700",
-        modifiers.outside ? "opacity-50" : "",
-        shift && tone
-          ? toneClassNames[tone]
+        "flex min-h-[4.5rem] w-full flex-col items-start justify-start overflow-hidden rounded-lg border p-1 text-left leading-tight transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700 sm:min-h-20 sm:p-2",
+        hasShift
+          ? "shift-confirm-day"
           : "border-transparent bg-white text-slate-700 hover:bg-slate-50",
       ].join(" ")}
+      data-outside-month={isOutsideMonth ? "true" : undefined}
+      data-shift-date={dateKey}
+      data-shift-level={hasShift ? availabilityLevel : undefined}
+      data-weekday={day.date.getDay()}
       {...buttonProps}
     >
-      <span className="text-sm font-bold">{day.date.getDate()}</span>
-      {shift ? (
+      <span className="block w-full text-xs font-bold sm:text-sm">
+        {day.date.getDate()}
+      </span>
+      {hasShift ? (
         <>
-          <span className="mt-1 hidden leading-4 sm:block">
-            {shift.startTime}–{shift.endTime}
+          <span className="mt-auto hidden w-full truncate text-[11px] font-semibold sm:block">
+            {formatDurationHoursCompact(durationMinutes)}
           </span>
-          <span className="mt-1 leading-4 sm:hidden">
-            {formatTimeRangeCompact(shift.startTime, shift.endTime)}
-          </span>
-          <span className="mt-0.5 hidden font-semibold leading-4 sm:block">
-            {formatDuration(shift.durationMinutes)}
-          </span>
-          <span className="mt-0.5 font-semibold leading-4 sm:hidden">
-            {formatDurationCompact(shift.durationMinutes)}
-          </span>
+          <span className="sr-only">登録済み、合計{formatDuration(durationMinutes)}</span>
         </>
       ) : null}
     </button>
@@ -77,7 +69,7 @@ export function ShiftConfirmCalendar({
   selectedDate: string | null;
   shifts: ShiftPreference[];
 }) {
-  const shiftsByDate = new Map(shifts.map((shift) => [shift.date, shift]));
+  const durationByDate = aggregateShiftDurationByDate(shifts);
   const selected = selectedDate ? parseLocalDateKey(selectedDate) : undefined;
 
   return (
@@ -86,7 +78,7 @@ export function ShiftConfirmCalendar({
       className="shift-confirm-calendar"
       components={{
         DayButton: (props) => (
-          <ConfirmDayButton {...props} shiftsByDate={shiftsByDate} />
+          <ConfirmDayButton {...props} durationByDate={durationByDate} />
         ),
       }}
       fixedWeeks
@@ -97,7 +89,7 @@ export function ShiftConfirmCalendar({
       labels={{
         labelDayButton: (date, modifiers) => {
           const dateKey = toLocalDateKey(date);
-          const shift = shiftsByDate.get(dateKey);
+          const durationMinutes = durationByDate.get(dateKey) ?? 0;
           const labels = [formatLongDate(dateKey)];
 
           if (modifiers.today) {
@@ -108,12 +100,8 @@ export function ShiftConfirmCalendar({
             labels.push("選択中");
           }
 
-          if (shift) {
-            labels.push(
-              `${shift.startTime}から${shift.endTime}、${formatDuration(
-                shift.durationMinutes,
-              )}`,
-            );
+          if (durationMinutes > 0) {
+            labels.push(`登録済み、合計${formatDuration(durationMinutes)}`);
           }
 
           return labels.join("、");

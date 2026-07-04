@@ -2,8 +2,11 @@ import { isDateKey } from "@/lib/date";
 import type { ShiftPreference } from "@/types/shift";
 
 const TIME_PATTERN = /^([01]\d|2[0-3]):([0-5]\d)$/;
+const MIN_TIME_MINUTES = 9 * 60;
+const MAX_TIME_MINUTES = 20 * 60;
+const TIME_STEP_MINUTES = 15;
 
-export type ShiftDurationTone = "short" | "medium" | "long";
+export type ShiftAvailabilityLevel = "none" | "short" | "middle" | "long";
 
 export function isValidTimeText(time: string): boolean {
   return TIME_PATTERN.test(time);
@@ -22,9 +25,18 @@ export function calculateDurationMinutes(startTime: string, endTime: string): nu
   return timeToMinutes(endTime) - timeToMinutes(startTime);
 }
 
-export function isThirtyMinuteStep(time: string): boolean {
+export function isFifteenMinuteStep(time: string): boolean {
   const minutes = timeToMinutes(time);
-  return Number.isFinite(minutes) && minutes % 30 === 0;
+  return Number.isFinite(minutes) && minutes % TIME_STEP_MINUTES === 0;
+}
+
+export function isWithinSelectableTimeRange(time: string): boolean {
+  const minutes = timeToMinutes(time);
+  return (
+    Number.isFinite(minutes) &&
+    minutes >= MIN_TIME_MINUTES &&
+    minutes <= MAX_TIME_MINUTES
+  );
 }
 
 export function getShiftValidationError(startTime: string, endTime: string): string | null {
@@ -40,8 +52,12 @@ export function getShiftValidationError(startTime: string, endTime: string): str
     return "時刻はHH:mm形式で入力してください。";
   }
 
-  if (!isThirtyMinuteStep(startTime) || !isThirtyMinuteStep(endTime)) {
-    return "時刻は30分単位で入力してください。";
+  if (!isFifteenMinuteStep(startTime) || !isFifteenMinuteStep(endTime)) {
+    return "時刻は15分単位で入力してください。";
+  }
+
+  if (!isWithinSelectableTimeRange(startTime) || !isWithinSelectableTimeRange(endTime)) {
+    return "時刻は09:00〜20:00の範囲で選択してください。";
   }
 
   const durationMinutes = calculateDurationMinutes(startTime, endTime);
@@ -90,40 +106,39 @@ export function formatDuration(minutes: number): string {
   return `${hours}時間${restMinutes}分`;
 }
 
-export function formatDurationCompact(minutes: number): string {
-  const hours = Math.floor(minutes / 60);
-  const restMinutes = minutes % 60;
+export function formatDurationHoursCompact(minutes: number): string {
+  const hours = minutes / 60;
+  const formattedHours = Number.isInteger(hours)
+    ? String(hours)
+    : String(Number(hours.toFixed(2)));
 
-  if (hours === 0) {
-    return `${restMinutes}m`;
-  }
-
-  if (restMinutes === 0) {
-    return `${hours}h`;
-  }
-
-  return `${hours}h${restMinutes}m`;
+  return `${formattedHours}h`;
 }
 
-export function getShiftDurationTone(minutes: number): ShiftDurationTone {
+export function getShiftAvailabilityLevel(minutes: number): ShiftAvailabilityLevel {
+  if (minutes <= 0) {
+    return "none";
+  }
+
   if (minutes <= 4 * 60) {
     return "short";
   }
 
   if (minutes <= 8 * 60) {
-    return "medium";
+    return "middle";
   }
 
   return "long";
 }
 
-export function formatTimeRangeCompact(startTime: string, endTime: string): string {
-  const formatTime = (time: string) => {
-    const [hours, minutes] = time.split(":");
-    return minutes === "00" ? String(Number(hours)) : `${Number(hours)}:${minutes}`;
-  };
-
-  return `${formatTime(startTime)}–${formatTime(endTime)}`;
+export function aggregateShiftDurationByDate(
+  shifts: ShiftPreference[],
+): Map<string, number> {
+  return shifts.reduce((durationByDate, shift) => {
+    const currentDuration = durationByDate.get(shift.date) ?? 0;
+    durationByDate.set(shift.date, currentDuration + shift.durationMinutes);
+    return durationByDate;
+  }, new Map<string, number>());
 }
 
 export function isShiftPreference(value: unknown): value is ShiftPreference {

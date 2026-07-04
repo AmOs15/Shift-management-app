@@ -62,6 +62,7 @@ export function ShiftInputPage({ initialDate }: { initialDate: string | null }) 
           onCancel={() => setSelectedDate(null)}
           onDelete={(date) => {
             deleteShift(date);
+            setSelectedDate(null);
             setMessage(`${formatShortDate(date)}のシフト希望を削除しました。`);
           }}
           onSave={(date, startTime, endTime) => {
@@ -71,6 +72,7 @@ export function ShiftInputPage({ initialDate }: { initialDate: string | null }) 
                 result === "created" ? "登録" : "更新"
               }しました。`,
             );
+            setSelectedDate(null);
             return result;
           }}
           selectedDate={selectedDate}
