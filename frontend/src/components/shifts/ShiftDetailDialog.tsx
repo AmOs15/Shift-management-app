@@ -31,7 +31,7 @@ export function ShiftDetailDialog({
       <div className={surface === "card" ? "p-5 sm:p-6" : ""}>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h2 className="text-lg font-black tracking-tight text-[var(--text-primary)]">
+            <h2 className="text-lg font-bold tracking-tight text-[var(--text-primary)]">
               {formatLongDate(selectedDate)}
             </h2>
             <p className="mt-2 text-sm text-[var(--text-secondary)]">
@@ -62,7 +62,7 @@ export function ShiftDetailDialog({
     <div className={surface === "card" ? "p-5 sm:p-6" : ""}>
       <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h2 className="text-lg font-black tracking-tight text-[var(--text-primary)]">
+          <h2 className="text-lg font-bold tracking-tight text-[var(--text-primary)]">
             {formatLongDate(shift.date)}
           </h2>
           <dl className="mt-4 space-y-2 text-sm text-[var(--text-secondary)]">
@@ -88,7 +88,7 @@ export function ShiftDetailDialog({
             </Button>
           ) : (
             <Link
-              className="app-button-primary inline-flex min-h-11 w-full items-center justify-center rounded-xl border px-4 py-2 text-sm font-bold transition duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent-500)] sm:w-auto"
+              className="app-button-primary inline-flex min-h-11 w-full items-center justify-center rounded-lg border px-4 py-2 text-sm font-bold transition duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent-500)] sm:w-auto"
               href={`/shifts/input?date=${shift.date}`}
             >
               編集する

@@ -3,9 +3,11 @@ import type { ReactNode } from "react";
 type MessageVariant = "info" | "success" | "error";
 
 const variantClassNames: Record<MessageVariant, string> = {
-  info: "border-[var(--accent-100)] bg-[var(--accent-100)] text-[var(--accent-600)]",
-  success: "border-emerald-100 bg-emerald-50 text-emerald-800",
-  error: "border-rose-100 bg-rose-50 text-rose-800",
+  info: "border-[var(--accent-200)] bg-[var(--accent-100)] text-[var(--accent-text)]",
+  success:
+    "border-[var(--success-soft-border)] bg-[var(--success-soft-bg)] text-[var(--success-soft-text)]",
+  error:
+    "border-[var(--danger-soft-border)] bg-[var(--danger-soft-bg)] text-[var(--danger-soft-text)]",
 };
 
 export function Message({
@@ -19,7 +21,7 @@ export function Message({
 }) {
   return (
     <div
-      className={`rounded-xl border px-4 py-3 text-sm font-medium ${variantClassNames[variant]} ${className}`}
+      className={`rounded-lg border px-4 py-3 text-sm font-medium ${variantClassNames[variant]} ${className}`}
       role={variant === "error" ? "alert" : "status"}
     >
       {children}

@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { formatShortDate, getTodayKey, parseLocalDateKey } from "@/lib/date";
-import { formatDuration } from "@/lib/shift";
+import { splitDurationParts } from "@/lib/shift";
 import { useShiftPreferences } from "@/hooks/useShiftPreferences";
 import type { ShiftPreference } from "@/types/shift";
 import { Button } from "@/components/ui/Button";
@@ -22,6 +22,10 @@ type ToastState = {
   message: string;
 };
 
+// An undoable toast has to stay long enough to find and press the action.
+const TOAST_DURATION_MS = 4000;
+const TOAST_WITH_ACTION_DURATION_MS = 6500;
+
 const modeItems: {
   description: string;
   label: string;
@@ -39,31 +43,29 @@ const modeItems: {
   },
 ];
 
+function MetricUnit({ children }: { children: ReactNode }) {
+  return (
+    <span className="text-xs font-bold text-[var(--text-secondary)]">{children}</span>
+  );
+}
+
 function SummaryMetric({
-  icon,
+  children,
+  className = "",
   label,
-  value,
 }: {
-  icon: string;
+  children: ReactNode;
+  className?: string;
   label: string;
-  value: string;
 }) {
   return (
-    <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 py-3 shadow-[0_1px_2px_rgba(20,21,26,0.04)] sm:px-4 sm:py-4">
-      <div className="flex items-center gap-1.5">
-        <span
-          className="inline-flex size-5 items-center justify-center rounded-full bg-[var(--accent-100)] text-[10px] font-black text-[var(--accent-600)]"
-          aria-hidden="true"
-        >
-          {icon}
-        </span>
-        <p className="truncate text-[11px] font-bold text-[var(--text-tertiary)]">
-          {label}
-        </p>
-      </div>
-      <p className="font-numeric mt-2 truncate text-xl font-black leading-none tracking-tight text-[var(--text-primary)] sm:text-2xl">
-        {value}
-      </p>
+    <div className={`min-w-0 ${className}`}>
+      <dt className="truncate text-xs font-medium text-[var(--text-tertiary)]">
+        {label}
+      </dt>
+      <dd className="font-numeric mt-1.5 flex items-baseline gap-0.5 overflow-hidden whitespace-nowrap text-2xl font-bold leading-none tracking-[-0.02em] text-[var(--text-primary)]">
+        {children}
+      </dd>
     </div>
   );
 }
@@ -78,7 +80,7 @@ function ModeSwitch({
   return (
     <div
       aria-label="表示モード"
-      className="grid grid-cols-2 rounded-2xl bg-[var(--bg-page)] p-1"
+      className="grid grid-cols-2 rounded-xl bg-[var(--bg-subtle)] p-1"
       role="tablist"
     >
       {modeItems.map((item) => {
@@ -88,10 +90,10 @@ function ModeSwitch({
           <button
             aria-selected={isSelected}
             className={[
-              "min-h-11 rounded-xl px-3 py-2 text-sm font-bold transition duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent-500)]",
+              "min-h-11 rounded-lg px-3 py-2 text-sm font-bold transition duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent-500)]",
               isSelected
-                ? "bg-[var(--bg-card)] text-[var(--accent-600)] shadow-sm"
-                : "text-[var(--text-secondary)] hover:bg-white/60 hover:text-[var(--text-primary)]",
+                ? "bg-[var(--bg-card)] text-[var(--accent-text)]"
+                : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]",
             ].join(" ")}
             key={item.mode}
             onClick={() => onChange(item.mode)}
@@ -114,7 +116,7 @@ function BottomModeNavigation({
   onChange: (mode: HomeMode) => void;
 }) {
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-[var(--border-subtle)] bg-white/90 px-3 pb-[env(safe-area-inset-bottom)] pt-2 shadow-[0_-12px_32px_rgba(20,21,26,0.08)] backdrop-blur sm:hidden">
+    <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 pb-[env(safe-area-inset-bottom)] pt-2 sm:hidden">
       <div className="mx-auto grid max-w-md grid-cols-2 gap-2">
         {modeItems.map((item) => {
           const isSelected = mode === item.mode;
@@ -123,7 +125,7 @@ function BottomModeNavigation({
             <button
               aria-current={isSelected ? "page" : undefined}
               className={[
-                "bottom-mode-button min-h-14 rounded-2xl px-3 py-2 text-center text-sm font-bold transition duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent-500)]",
+                "bottom-mode-button min-h-14 rounded-xl px-3 py-2 text-center text-sm font-bold transition duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent-500)]",
                 isSelected
                   ? "app-button-primary"
                   : "border border-[var(--border-subtle)] bg-[var(--bg-card)] text-[var(--text-primary)] hover:bg-[var(--accent-100)]",
@@ -133,7 +135,7 @@ function BottomModeNavigation({
               type="button"
             >
               <span className="block">{item.label}</span>
-              <span className="mt-0.5 block truncate text-[11px] font-semibold opacity-80">
+              <span className="mt-0.5 block truncate text-xs font-medium opacity-80">
                 {item.description}
               </span>
             </button>
@@ -153,10 +155,39 @@ function HomeBottomSheet({
   onClose: () => void;
   title: string;
 }) {
+  const sheetRef = useRef<HTMLElement>(null);
+
+  // Escape closes, and Tab cycles inside the sheet instead of reaching the
+  // page behind the scrim.
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
         onClose();
+        return;
+      }
+
+      if (event.key !== "Tab" || !sheetRef.current) {
+        return;
+      }
+
+      const focusableElements = sheetRef.current.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled])',
+      );
+
+      if (focusableElements.length === 0) {
+        return;
+      }
+
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+      const activeElement = document.activeElement;
+
+      if (event.shiftKey && (activeElement === firstElement || activeElement === sheetRef.current)) {
+        event.preventDefault();
+        lastElement.focus();
+      } else if (!event.shiftKey && activeElement === lastElement) {
+        event.preventDefault();
+        firstElement.focus();
       }
     }
 
@@ -164,28 +195,49 @@ function HomeBottomSheet({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
 
+  // Move focus into the sheet on open, lock the page behind it, and hand focus
+  // back to whatever opened it on close.
+  useEffect(() => {
+    const previouslyFocusedElement = document.activeElement as HTMLElement | null;
+    const previousOverflow = document.body.style.overflow;
+
+    document.body.style.overflow = "hidden";
+    sheetRef.current?.focus();
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      previouslyFocusedElement?.focus();
+    };
+  }, []);
+
   return (
     <>
       <button
-        aria-label="パネルを閉じる"
-        className="fixed inset-0 z-40 bg-slate-950/30 backdrop-blur-[2px]"
+        aria-hidden="true"
+        className="fixed inset-0 z-40 bg-[var(--overlay)]"
         onClick={onClose}
+        tabIndex={-1}
         type="button"
       />
       <section
-        aria-label={title}
+        aria-labelledby="home-sheet-title"
         aria-modal="true"
-        className="fixed inset-x-0 bottom-0 z-50 mx-auto max-h-[84dvh] max-w-2xl animate-[sheet-up_0.2s_ease-out] overflow-y-auto rounded-t-[1.5rem] border border-[var(--border-subtle)] bg-[var(--bg-card)] px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3 shadow-[var(--shadow-floating)] sm:bottom-6 sm:rounded-2xl sm:px-5 sm:pb-5"
+        className="fixed inset-x-0 bottom-0 z-50 mx-auto max-h-[84dvh] max-w-2xl animate-[sheet-up_0.2s_ease-out] overflow-y-auto rounded-t-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3 shadow-[var(--shadow-floating)] focus:outline-none sm:bottom-6 sm:rounded-xl sm:px-5 sm:pb-5"
+        ref={sheetRef}
         role="dialog"
+        tabIndex={-1}
       >
         <div className="sticky top-0 z-10 -mx-4 mb-4 border-b border-[var(--border-subtle)] bg-[var(--bg-card)] px-4 pb-3 sm:-mx-5 sm:px-5">
-          <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-[#cfd3df] sm:hidden" />
+          <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-[var(--sheet-grabber)] sm:hidden" />
           <div className="flex items-center justify-between gap-3">
-            <h2 className="min-w-0 truncate text-base font-black tracking-tight text-[var(--text-primary)]">
+            <h2
+              className="min-w-0 truncate text-base font-bold tracking-tight text-[var(--text-primary)]"
+              id="home-sheet-title"
+            >
               {title}
             </h2>
             <button
-              className="inline-flex h-8 shrink-0 items-center justify-center rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-page)] px-2.5 text-xs font-bold text-[var(--text-secondary)] transition hover:bg-[var(--accent-100)] hover:text-[var(--accent-600)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent-500)]"
+              className="inline-flex h-8 shrink-0 items-center justify-center rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-2.5 text-xs font-bold text-[var(--text-secondary)] transition hover:bg-[var(--accent-100)] hover:text-[var(--accent-text)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent-500)]"
               onClick={onClose}
               type="button"
             >
@@ -206,14 +258,14 @@ function Toast({
 }) {
   return (
     <div
-      className="fixed inset-x-3 bottom-[6.25rem] z-50 mx-auto max-w-md animate-[toast-in_0.18s_ease-out] rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-white shadow-lg sm:bottom-5"
+      className="fixed inset-x-3 bottom-[6.25rem] z-50 mx-auto max-w-md animate-[toast-in_0.18s_ease-out] rounded-xl border border-[var(--toast-border)] bg-[var(--toast-bg)] px-4 py-3 text-sm text-[var(--toast-text)] shadow-[var(--shadow-floating)] sm:bottom-5"
       role="status"
     >
       <div className="flex items-center justify-between gap-3">
         <p className="min-w-0">{toast.message}</p>
         {toast.action ? (
           <button
-            className="shrink-0 rounded-md px-2 py-1 text-sm font-bold text-sky-200 transition hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            className="shrink-0 rounded-md px-2 py-1 text-sm font-bold text-[var(--toast-action)] transition hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--toast-action)]"
             onClick={toast.action.onClick}
             type="button"
           >
@@ -253,6 +305,7 @@ export function MenuPage() {
   const [toast, setToast] = useState<ToastState | null>(null);
   const [visibleMonth, setVisibleMonth] = useState(() => new Date());
   const selectedShift = selectedDate ? getShiftByDate(selectedDate) : undefined;
+  const isLoading = loadState === "loading";
 
   const visibleMonthKey = getMonthKey(visibleMonth);
   const visibleMonthShifts = useMemo(
@@ -263,6 +316,7 @@ export function MenuPage() {
     () => visibleMonthShifts.reduce((total, shift) => total + shift.durationMinutes, 0),
     [visibleMonthShifts],
   );
+  const totalDuration = splitDurationParts(totalMinutes);
   const nextShift = useMemo(() => getNextShift(shifts), [shifts]);
 
   useEffect(() => {
@@ -270,7 +324,10 @@ export function MenuPage() {
       return;
     }
 
-    const timerId = window.setTimeout(() => setToast(null), 4000);
+    const timerId = window.setTimeout(
+      () => setToast(null),
+      toast.action ? TOAST_WITH_ACTION_DURATION_MS : TOAST_DURATION_MS,
+    );
     return () => window.clearTimeout(timerId);
   }, [toast]);
 
@@ -307,54 +364,61 @@ export function MenuPage() {
 
   return (
     <div className="space-y-4 pb-28 sm:space-y-5 sm:pb-6">
-      <section className="app-card rounded-2xl border p-4 sm:p-5">
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <p className="text-xs font-black text-[var(--accent-600)]">シフト希望</p>
-            <h1 className="mt-1 text-[1.35rem] font-black leading-tight tracking-tight text-[var(--text-primary)] sm:text-2xl">
-              {formatMonthLabel(visibleMonth)}の提出状況
-            </h1>
-            <p className="mt-1 text-sm text-[var(--text-secondary)]">
-              カレンダーから日付を選んで、入力と確認を切り替えます。
-            </p>
-          </div>
-          <Button
-            className="hidden shrink-0 sm:inline-flex"
-            disabled={loadState === "loading" || shiftCount === 0}
-            onClick={handleReset}
-            variant="ghost"
-          >
-            リセット
-          </Button>
-        </div>
+      <section className="app-card rounded-xl border p-4 sm:p-5">
+        <h1 className="text-2xl font-bold leading-tight tracking-[-0.02em] text-[var(--text-primary)]">
+          {formatMonthLabel(visibleMonth)}の提出状況
+        </h1>
+        <p className="mt-1 text-sm text-[var(--text-secondary)]">
+          カレンダーから日付を選んで、入力と確認を切り替えます。
+        </p>
 
-        <div className="mt-4 grid grid-cols-3 gap-3">
-          <SummaryMetric
-            icon="日"
-            label="登録日数"
-            value={loadState === "loading" ? "-" : `${visibleMonthShifts.length}日`}
-          />
-          <SummaryMetric
-            icon="時"
-            label="合計時間"
-            value={loadState === "loading" ? "-" : formatDuration(totalMinutes)}
-          />
-          <SummaryMetric
-            icon="次"
-            label="次の予定"
-            value={nextShift ? formatShortDate(nextShift.date) : "-"}
-          />
-        </div>
+        <dl className="mt-5 grid grid-cols-2 gap-x-6 gap-y-5 border-t border-[var(--border-subtle)] pt-5 sm:grid-cols-3">
+          <SummaryMetric label="登録日数">
+            {isLoading ? (
+              "—"
+            ) : (
+              <>
+                {visibleMonthShifts.length}
+                <MetricUnit>日</MetricUnit>
+              </>
+            )}
+          </SummaryMetric>
+          <SummaryMetric label="合計時間">
+            {isLoading ? (
+              "—"
+            ) : (
+              <>
+                {totalDuration.hours}
+                <MetricUnit>時間</MetricUnit>
+                {totalDuration.minutes > 0 ? (
+                  <>
+                    {totalDuration.minutes}
+                    <MetricUnit>分</MetricUnit>
+                  </>
+                ) : null}
+              </>
+            )}
+          </SummaryMetric>
+          <SummaryMetric className="col-span-2 sm:col-span-1" label="次の予定">
+            {isLoading || !nextShift ? (
+              <span className="text-base font-bold text-[var(--text-tertiary)]">
+                {isLoading ? "—" : "なし"}
+              </span>
+            ) : (
+              formatShortDate(nextShift.date)
+            )}
+          </SummaryMetric>
+        </dl>
 
-        <div className="mt-4 hidden sm:block">
+        <div className="mt-5 hidden sm:block">
           <ModeSwitch mode={mode} onChange={handleModeChange} />
         </div>
       </section>
 
-      <section className="app-card rounded-2xl border p-3 sm:p-5">
+      <section className="app-card rounded-xl border p-3 sm:p-5">
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h2 className="text-base font-black tracking-tight text-[var(--text-primary)]">
+            <h2 className="text-base font-bold tracking-[-0.01em] text-[var(--text-primary)]">
               {mode === "input" ? "シフト入力カレンダー" : "提出確認カレンダー"}
             </h2>
             <p className="mt-1 text-sm text-[var(--text-secondary)]">
@@ -368,7 +432,7 @@ export function MenuPage() {
           </div>
         </div>
 
-        {loadState === "loading" ? (
+        {isLoading ? (
           <Message>シフト情報を読み込んでいます...</Message>
         ) : (
           <ShiftConfirmCalendar
@@ -387,14 +451,14 @@ export function MenuPage() {
         )}
       </section>
 
-      <div className="sm:hidden">
+      <div className="flex justify-center">
         <Button
-          className="w-full"
-          disabled={loadState === "loading" || shiftCount === 0}
+          className="app-button-destructive w-full sm:w-auto"
+          disabled={isLoading || shiftCount === 0}
           onClick={handleReset}
-          variant="ghost"
+          variant="secondary"
         >
-          このセッションのデータをリセット
+          このセッションのシフト希望をすべて削除
         </Button>
       </div>
 

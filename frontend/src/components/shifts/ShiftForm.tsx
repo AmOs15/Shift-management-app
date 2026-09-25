@@ -80,7 +80,7 @@ function TimeSelect({
           {label} 時
         </label>
         <select
-          className="font-numeric min-h-11 w-full rounded-xl border-0 bg-[var(--bg-page)] px-3 py-2 font-bold text-[var(--text-primary)] outline-none transition focus:ring-2 focus:ring-[var(--accent-500)]"
+          className="app-field font-numeric min-h-11 w-full px-3 py-2 font-bold"
           id={`${idPrefix}-hour`}
           onChange={(event) => handleHourChange(event.target.value)}
           value={hour}
@@ -97,7 +97,7 @@ function TimeSelect({
           {label} 分
         </label>
         <select
-          className="font-numeric min-h-11 w-full rounded-xl border-0 bg-[var(--bg-page)] px-3 py-2 font-bold text-[var(--text-primary)] outline-none transition focus:ring-2 focus:ring-[var(--accent-500)]"
+          className="app-field font-numeric min-h-11 w-full px-3 py-2 font-bold"
           id={`${idPrefix}-minute`}
           onChange={(event) => handleMinuteChange(event.target.value)}
           value={minuteOptions.includes(minute) ? minute : minuteOptions[0]}
@@ -125,8 +125,11 @@ export function ShiftForm({
   const [startTime, setStartTime] = useState("09:00");
   const [endTime, setEndTime] = useState("20:00");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
 
   useEffect(() => {
+    setIsConfirmingDelete(false);
+
     if (!selectedDate) {
       setStartTime("09:00");
       setEndTime("20:00");
@@ -191,13 +194,7 @@ export function ShiftForm({
       return;
     }
 
-    const confirmed = window.confirm(
-      `${formatShortDate(selectedDate)}のシフト希望を削除しますか？`,
-    );
-
-    if (confirmed) {
-      onDelete(selectedDate);
-    }
+    onDelete(selectedDate);
   }
 
   if (!selectedDate) {
@@ -221,10 +218,10 @@ export function ShiftForm({
   const formContent = (
     <div className={surface === "card" ? "p-5 sm:p-6" : ""}>
       <div className="mb-5">
-        <p className="text-sm font-bold text-[var(--accent-600)]">
+        <p className="text-sm font-bold text-[var(--accent-text)]">
           {existingShift ? "登録済みの日を編集中" : "未登録の日を入力中"}
         </p>
-        <h2 className="mt-1 text-lg font-black tracking-tight text-[var(--text-primary)] sm:text-xl">
+        <h2 className="mt-1 text-lg font-bold tracking-tight text-[var(--text-primary)] sm:text-xl">
           {formatShortDate(selectedDate)}
         </h2>
       </div>
@@ -252,8 +249,11 @@ export function ShiftForm({
           />
         </div>
 
-        <p className="inline-flex w-fit items-center rounded-full bg-[var(--accent-100)] px-3 py-1.5 text-sm font-bold text-[var(--accent-600)]">
-          勤務可能時間：<span className="font-numeric font-black">{durationText}</span>
+        <p className="text-sm text-[var(--text-secondary)]">
+          勤務可能時間
+          <span className="font-numeric ml-2 text-base font-bold text-[var(--text-primary)]">
+            {durationText}
+          </span>
         </p>
 
         {visibleError ? <Message variant="error">{visibleError}</Message> : null}
@@ -272,19 +272,43 @@ export function ShiftForm({
           />
         </div>
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-          <Button className="w-full sm:w-auto" onClick={() => saveCurrentTimes()}>
-            {existingShift ? "変更を保存" : "この内容で登録"}
-          </Button>
-          {existingShift ? (
-            <Button className="w-full sm:w-auto" onClick={handleDelete} variant="danger">
-              この日の希望を削除
+        {isConfirmingDelete ? (
+          <div className="rounded-lg border border-[var(--danger-soft-border)] bg-[var(--danger-soft-bg)] p-3">
+            <p className="text-sm font-bold text-[var(--danger-soft-text)]">
+              {formatShortDate(selectedDate)}のシフト希望を削除します。
+            </p>
+            <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+              <Button className="w-full sm:w-auto" onClick={handleDelete} variant="danger">
+                削除する
+              </Button>
+              <Button
+                className="w-full sm:w-auto"
+                onClick={() => setIsConfirmingDelete(false)}
+                variant="secondary"
+              >
+                やめる
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <Button className="w-full sm:w-auto" onClick={() => saveCurrentTimes()}>
+              {existingShift ? "変更を保存" : "この内容で登録"}
             </Button>
-          ) : null}
-          <Button className="w-full sm:w-auto" onClick={onCancel} variant="secondary">
-            キャンセル
-          </Button>
-        </div>
+            {existingShift ? (
+              <Button
+                className="w-full sm:w-auto"
+                onClick={() => setIsConfirmingDelete(true)}
+                variant="danger"
+              >
+                この日の希望を削除
+              </Button>
+            ) : null}
+            <Button className="w-full sm:w-auto" onClick={onCancel} variant="secondary">
+              キャンセル
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

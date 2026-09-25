@@ -8,11 +8,13 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: ButtonVariant;
 };
 
+// Disabled styling lives with each .app-button-* rule in globals.css so every
+// variant lands on the same muted surface instead of a per-variant fade.
 const variantClassNames: Record<ButtonVariant, string> = {
-  primary: "app-button-primary disabled:shadow-none",
-  secondary: "app-button-secondary disabled:text-slate-400",
-  danger: "app-button-danger disabled:border-red-300 disabled:bg-red-300",
-  ghost: "app-button-ghost disabled:text-slate-400",
+  primary: "app-button-primary",
+  secondary: "app-button-secondary",
+  danger: "app-button-danger",
+  ghost: "app-button-ghost",
 };
 
 export function Button({
@@ -26,7 +28,7 @@ export function Button({
   return (
     <button
       className={[
-        "inline-flex min-h-11 items-center justify-center rounded-xl border px-4 py-2 text-sm font-bold transition duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent-500)] disabled:opacity-80",
+        "inline-flex min-h-11 items-center justify-center rounded-lg border px-4 py-2 text-sm font-bold transition duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent-500)]",
         variantClassNames[variant],
         fullWidth ? "w-full" : "",
         className,

@@ -35,7 +35,7 @@ export function ShiftInputPage({ initialDate }: { initialDate: string | null }) 
   return (
     <div className="space-y-5 sm:space-y-6">
       <div>
-        <h1 className="text-xl font-black tracking-tight text-[var(--text-primary)] sm:text-2xl">
+        <h1 className="text-2xl font-bold tracking-[-0.02em] text-[var(--text-primary)]">
           シフト入力
         </h1>
         <p className="mt-2 text-sm text-[var(--text-secondary)]">

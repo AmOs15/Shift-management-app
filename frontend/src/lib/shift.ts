@@ -106,6 +106,16 @@ export function formatDuration(minutes: number): string {
   return `${hours}時間${restMinutes}分`;
 }
 
+export function splitDurationParts(totalMinutes: number): {
+  hours: number;
+  minutes: number;
+} {
+  return {
+    hours: Math.floor(totalMinutes / 60),
+    minutes: totalMinutes % 60,
+  };
+}
+
 export function formatDurationHoursCompact(minutes: number): string {
   const hours = minutes / 60;
   const formattedHours = Number.isInteger(hours)
