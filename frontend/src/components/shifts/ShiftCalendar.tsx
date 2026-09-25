@@ -60,8 +60,16 @@ export function ShiftCalendar({
       }}
       locale={ja}
       mode="single"
-      modifiers={{ registered: registeredDates }}
-      modifiersClassNames={{ registered: "shift-day-registered" }}
+      modifiers={{
+        registered: registeredDates,
+        saturday: { dayOfWeek: [6] },
+        sunday: { dayOfWeek: [0] },
+      }}
+      modifiersClassNames={{
+        registered: "shift-day-registered",
+        saturday: "shift-day-sat",
+        sunday: "shift-day-sun",
+      }}
       onSelect={(date) => {
         if (date) {
           onSelectDate(toLocalDateKey(date));

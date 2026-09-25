@@ -1,26 +1,66 @@
 @import "tailwindcss";
 @import "@daypicker/react/style.css";
 
+/* ---------------------------------------------------------------------------
+   Design tokens
+   ---------------------------------------------------------------------------
+   :root holds the complete light palette. The dark palette redefines the same
+   token names inside the prefers-color-scheme query, so components never need
+   to know which theme is active — they only ever read a token.
+   There is no in-app theme switcher, so the OS setting is the single source.
+   --------------------------------------------------------------------------- */
+
 :root {
-  --background: #f7f8fb;
-  --foreground: #14151a;
-  --bg-page: #f7f8fb;
+  color-scheme: light;
+
+  /* Surfaces */
+  --bg-page: #f5f6fb;
   --bg-card: #ffffff;
-  --border-subtle: #e7e9f0;
+  --bg-subtle: #eef0f7;
+  --border-subtle: #e3e6f0;
+  --border-strong: #ccd1e2;
+
+  /* Text — tertiary is used at 12px, so it clears 4.5:1 on both --bg-card
+     (5.15:1) and the darker --bg-page (4.77:1) */
   --text-primary: #14151a;
-  --text-secondary: #6b7080;
-  --text-tertiary: #a0a4b2;
-  --accent-100: #eceeff;
+  --text-secondary: #5b6072;
+  --text-tertiary: #686d7e;
+  --text-on-accent: #ffffff;
+
+  /* Accent — 500/600 are fills, --accent-text is the readable text weight */
+  --accent-100: #ecefff;
+  --accent-200: #d8ddff;
   --accent-500: #4f5dff;
-  --accent-600: #3e4ae0;
-  --sat-color: #3b82f6;
-  --sun-color: #f43f5e;
-  --success: #22c55e;
-  --warning: #f59e0b;
-  --shift-availability-short-bg: #e6f0ff;
-  --shift-availability-short-border: #cfdcff;
-  --shift-availability-short-text: #23306d;
-  --shift-availability-short-hover: #dce8ff;
+  --accent-600: #3b46d6;
+  --accent-text: #3742c4;
+
+  /* Semantic */
+  --danger-500: #e11d48;
+  --danger-600: #be123c;
+  --danger-soft-bg: #fff1f4;
+  --danger-soft-border: #ffd7e0;
+  --danger-soft-text: #a11040;
+  --success-soft-bg: #edfdf4;
+  --success-soft-border: #c5efd9;
+  --success-soft-text: #0e6a45;
+
+  /* Overlays and floating surfaces */
+  --overlay: rgba(15, 16, 24, 0.4);
+  --sheet-grabber: #d3d7e4;
+  --toast-bg: #1b1d27;
+  --toast-border: #2f3342;
+  --toast-text: #f4f5fa;
+  --toast-action: #aeb6ff;
+
+  /* Calendar */
+  --sun-color: #d92d52;
+  --sat-color: #2563eb;
+  --day-disabled-bg: #f0f2f8;
+  --day-disabled-text: #878da0;
+  --shift-availability-short-bg: #dde8ff;
+  --shift-availability-short-border: #bccdfb;
+  --shift-availability-short-text: #1f2c63;
+  --shift-availability-short-hover: #cfdeff;
   --shift-availability-middle-bg: #8fb6ff;
   --shift-availability-middle-border: #6d99f3;
   --shift-availability-middle-text: #111b46;
@@ -29,8 +69,67 @@
   --shift-availability-long-border: #3e4ae0;
   --shift-availability-long-text: #ffffff;
   --shift-availability-long-hover: #3e4ae0;
-  --shadow-card: 0 1px 2px rgba(20, 21, 26, 0.04), 0 12px 28px rgba(20, 21, 26, 0.05);
-  --shadow-floating: 0 24px 80px rgba(20, 21, 26, 0.2);
+
+  /* Elevation */
+  --shadow-floating: 0 16px 48px rgba(20, 21, 26, 0.16);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+
+    --bg-page: #0f1017;
+    --bg-card: #191b24;
+    --bg-subtle: #232633;
+    --border-subtle: #2c2f3d;
+    --border-strong: #3c4052;
+
+    --text-primary: #eceef5;
+    --text-secondary: #a6abbc;
+    --text-tertiary: #8b91a3;
+    --text-on-accent: #ffffff;
+
+    --accent-100: #232848;
+    --accent-200: #2e3459;
+    --accent-500: #5a67f2;
+    --accent-600: #4650dd;
+    --accent-text: #a9b1ff;
+
+    --danger-500: #f43f5e;
+    --danger-600: #e11d48;
+    --danger-soft-bg: #2d1620;
+    --danger-soft-border: #4a2130;
+    --danger-soft-text: #ffa9bd;
+    --success-soft-bg: #10261d;
+    --success-soft-border: #1d4434;
+    --success-soft-text: #7fe0b2;
+
+    --overlay: rgba(0, 0, 0, 0.62);
+    --sheet-grabber: #3c4051;
+    --toast-bg: #2b2e3c;
+    --toast-border: #3d4153;
+    --toast-text: #f4f5fa;
+    --toast-action: #a9b1ff;
+
+    --sun-color: #fb7185;
+    --sat-color: #60a5fa;
+    --day-disabled-bg: #15171f;
+    --day-disabled-text: #666c7e;
+    --shift-availability-short-bg: #1e2740;
+    --shift-availability-short-border: #2d3a5e;
+    --shift-availability-short-text: #c3d2f7;
+    --shift-availability-short-hover: #253052;
+    --shift-availability-middle-bg: #34499c;
+    --shift-availability-middle-border: #4359bb;
+    --shift-availability-middle-text: #dde6ff;
+    --shift-availability-middle-hover: #3d54b3;
+    --shift-availability-long-bg: #5a67f2;
+    --shift-availability-long-border: #6f7bff;
+    --shift-availability-long-text: #ffffff;
+    --shift-availability-long-hover: #6b77ff;
+
+    --shadow-floating: 0 16px 48px rgba(0, 0, 0, 0.55);
+  }
 }
 
 * {
@@ -43,9 +142,10 @@ html {
 
 body {
   min-height: 100%;
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-jp), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--bg-page);
+  color: var(--text-primary);
+  font-family: var(--font-jp), "Hiragino Sans", "Hiragino Kaku Gothic ProN",
+    "Yu Gothic Medium", "Yu Gothic", Meiryo, system-ui, -apple-system, sans-serif;
   margin: 0;
   overflow-x: hidden;
   text-rendering: optimizeLegibility;
@@ -99,44 +199,75 @@ button:disabled {
 .font-numeric {
   font-family: var(--font-num), var(--font-jp), system-ui, sans-serif;
   font-feature-settings: "tnum";
+  font-variant-numeric: tabular-nums;
 }
 
 .app-card {
   background: var(--bg-card);
   border-color: var(--border-subtle);
-  box-shadow: var(--shadow-card);
+}
+
+/* Text inputs and selects. A visible border is what makes them read as
+   editable; the calendar next to them is full of look-alike boxes. */
+.app-field {
+  background: var(--bg-card);
+  border: 1px solid var(--border-strong);
+  border-radius: 0.5rem;
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.app-field:hover {
+  border-color: var(--accent-500);
+}
+
+.app-field:focus {
+  border-color: var(--accent-500);
+  box-shadow: 0 0 0 3px var(--accent-100);
 }
 
 .app-button-primary {
-  background: linear-gradient(135deg, var(--accent-500), var(--accent-600));
-  border-color: transparent;
-  color: #ffffff;
-  box-shadow: 0 8px 18px rgba(79, 93, 255, 0.22);
+  background: var(--accent-500);
+  border-color: var(--accent-500);
+  color: var(--text-on-accent);
 }
 
 .app-button-primary:hover {
-  filter: brightness(0.98);
+  background: var(--accent-600);
+  border-color: var(--accent-600);
 }
 
 .app-button-secondary {
   background: var(--bg-card);
-  border-color: var(--border-subtle);
+  border-color: var(--border-strong);
   color: var(--text-primary);
 }
 
 .app-button-secondary:hover {
-  background: var(--bg-page);
+  background: var(--bg-subtle);
+}
+
+/* A quiet button whose action is destructive: outlined, not filled, but the
+   label carries the danger colour. Beats .app-button-secondary on order. */
+.app-button-destructive {
+  color: var(--danger-500);
+}
+
+.app-button-destructive:hover {
+  background: var(--danger-soft-bg);
+  border-color: var(--danger-soft-border);
 }
 
 .app-button-danger {
-  background: #f43f5e;
-  border-color: #f43f5e;
+  background: var(--danger-500);
+  border-color: var(--danger-500);
   color: #ffffff;
 }
 
 .app-button-danger:hover {
-  background: #e11d48;
-  border-color: #e11d48;
+  background: var(--danger-600);
+  border-color: var(--danger-600);
 }
 
 .app-button-ghost {
@@ -147,7 +278,16 @@ button:disabled {
 
 .app-button-ghost:hover {
   background: var(--accent-100);
-  color: var(--accent-600);
+  color: var(--accent-text);
+}
+
+.app-button-primary:disabled,
+.app-button-secondary:disabled,
+.app-button-danger:disabled,
+.app-button-ghost:disabled {
+  background: var(--bg-subtle);
+  border-color: var(--border-subtle);
+  color: var(--text-tertiary);
 }
 
 .app-button-primary:active,
@@ -159,6 +299,10 @@ button:disabled {
 .bottom-mode-button:active {
   transform: scale(0.98);
 }
+
+/* ---------------------------------------------------------------------------
+   Calendars
+   --------------------------------------------------------------------------- */
 
 .shift-calendar {
   --rdp-accent-color: var(--accent-500);
@@ -186,6 +330,7 @@ button:disabled {
 }
 
 .shift-calendar .rdp-caption_label {
+  color: var(--text-primary);
   font-size: 1rem;
   font-weight: 700;
 }
@@ -194,21 +339,39 @@ button:disabled {
   inset-inline-end: 0;
 }
 
-.shift-calendar .rdp-weekday {
-  color: #475569;
-  font-size: 0.75rem;
-  font-weight: 700;
+.shift-calendar .rdp-button_previous,
+.shift-calendar .rdp-button_next {
+  color: var(--text-secondary);
 }
 
-.shift-calendar .rdp-day {
-  width: 14.285%;
-  height: 3rem;
+.shift-calendar .rdp-weekday {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 700;
 }
 
 .shift-calendar .rdp-day_button {
   height: 2.75rem;
   width: 100%;
   border-radius: 0.5rem;
+  color: var(--text-primary);
+}
+
+/* Japanese calendars colour the weekend; both calendars do it the same way. */
+.shift-day-sun .rdp-day_button {
+  color: var(--sun-color);
+}
+
+.shift-day-sat .rdp-day_button {
+  color: var(--sat-color);
+}
+
+.shift-calendar .rdp-day:not(.rdp-selected) .rdp-day_button:hover:not(:disabled) {
+  background: var(--accent-100);
+}
+
+.shift-calendar .rdp-day_button:disabled {
+  color: var(--day-disabled-text);
 }
 
 .shift-day-registered .rdp-day_button {
@@ -228,8 +391,8 @@ button:disabled {
 }
 
 .shift-calendar .rdp-selected .rdp-day_button {
-  background: linear-gradient(135deg, var(--accent-500), var(--accent-600));
-  color: #ffffff;
+  background: var(--accent-500);
+  color: var(--text-on-accent);
 }
 
 .shift-calendar .rdp-selected.shift-day-registered .rdp-day_button::after {
@@ -243,7 +406,7 @@ button:disabled {
   --rdp-day-width: 100%;
   --rdp-day_button-height: 4rem;
   --rdp-day_button-width: 100%;
-  --rdp-day_button-border-radius: 0.875rem;
+  --rdp-day_button-border-radius: 0.5rem;
   --rdp-selected-border: 2px solid var(--accent-500);
   margin: 0;
   width: 100%;
@@ -266,7 +429,7 @@ button:disabled {
 .shift-confirm-calendar .rdp-caption_label {
   color: var(--text-primary);
   font-size: 1.1rem;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: -0.02em;
 }
 
@@ -279,8 +442,8 @@ button:disabled {
 .shift-confirm-calendar .rdp-button_next {
   width: 2rem;
   height: 2rem;
-  background: var(--bg-page);
-  border-radius: 9999px;
+  background: transparent;
+  border-radius: 0.5rem;
   color: var(--text-secondary);
   transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
 }
@@ -288,22 +451,14 @@ button:disabled {
 .shift-confirm-calendar .rdp-button_previous:hover,
 .shift-confirm-calendar .rdp-button_next:hover {
   background: var(--accent-100);
-  color: var(--accent-600);
+  color: var(--accent-text);
 }
 
 .shift-confirm-calendar .rdp-weekday {
-  background: var(--bg-page);
-  color: var(--text-secondary);
+  color: var(--text-tertiary);
   font-size: 0.75rem;
-  font-weight: 800;
-}
-
-.shift-confirm-calendar .rdp-weekday:first-child {
-  border-radius: 0.75rem 0 0 0.75rem;
-}
-
-.shift-confirm-calendar .rdp-weekday:last-child {
-  border-radius: 0 0.75rem 0.75rem 0;
+  font-weight: 600;
+  padding-bottom: 0.5rem;
 }
 
 .shift-confirm-calendar .rdp-day {
@@ -315,10 +470,11 @@ button:disabled {
 .shift-confirm-calendar .rdp-day_button {
   width: 100%;
   height: 4rem;
+  /* Empty days are just a number; only registered, today and selected draw a
+     box, so the month reads as data rather than 42 outlined cells. */
   border: 1px solid transparent;
-  border-radius: 0.875rem;
-  box-shadow: inset 0 0 0 1px rgba(231, 233, 240, 0.7);
-  transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, color 0.15s ease, transform 0.15s ease;
+  border-radius: 0.5rem;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
 }
 
 .shift-confirm-calendar .rdp-day_button[data-weekday="0"]:not([data-shift-level]) {
@@ -337,13 +493,12 @@ button:disabled {
 .shift-confirm-calendar .rdp-day_button[data-today="true"]:not([data-shift-level]):not(:disabled) {
   background: var(--accent-100);
   border-color: var(--accent-500);
-  box-shadow: inset 0 0 0 1px var(--accent-500);
-  color: var(--accent-600);
-  font-weight: 800;
+  color: var(--accent-text);
+  font-weight: 700;
 }
 
 .shift-confirm-calendar .rdp-day_button[data-shift-level="short"] {
-  background: linear-gradient(135deg, var(--shift-availability-short-bg), #f8fbff);
+  background: var(--shift-availability-short-bg);
   border-color: var(--shift-availability-short-border);
   color: var(--shift-availability-short-text);
 }
@@ -353,7 +508,7 @@ button:disabled {
 }
 
 .shift-confirm-calendar .rdp-day_button[data-shift-level="middle"] {
-  background: linear-gradient(135deg, var(--shift-availability-middle-bg), #d8e6ff);
+  background: var(--shift-availability-middle-bg);
   border-color: var(--shift-availability-middle-border);
   color: var(--shift-availability-middle-text);
 }
@@ -363,37 +518,41 @@ button:disabled {
 }
 
 .shift-confirm-calendar .rdp-day_button[data-shift-level="long"] {
-  background: linear-gradient(135deg, var(--shift-availability-long-bg), var(--accent-600));
+  background: var(--shift-availability-long-bg);
   border-color: var(--shift-availability-long-border);
   color: var(--shift-availability-long-text);
-  box-shadow: 0 8px 18px rgba(79, 93, 255, 0.18);
 }
 
 .shift-confirm-calendar .rdp-day_button[data-shift-level="long"]:hover {
   background: var(--shift-availability-long-hover);
 }
 
-.shift-confirm-calendar .rdp-selected .rdp-day_button[data-shift-level] {
-  box-shadow: inset 0 0 0 2px var(--accent-600), 0 8px 18px rgba(79, 93, 255, 0.18);
+/* The day's own marker: a filled bar whose length tracks the level, so the
+   three steps stay distinguishable without relying on hue alone. */
+.shift-level-bar {
+  display: block;
+  height: 0.1875rem;
+  border-radius: 9999px;
+  background: currentColor;
+  opacity: 0.55;
 }
 
 .shift-confirm-calendar .rdp-selected .rdp-day_button:not(:disabled) {
-  background: linear-gradient(135deg, var(--accent-500), var(--accent-600));
+  background: var(--accent-500);
   border-color: var(--accent-600);
-  color: #ffffff;
-  box-shadow: 0 10px 24px rgba(79, 93, 255, 0.25);
+  color: var(--text-on-accent);
 }
 
 .shift-confirm-calendar .rdp-day_button:disabled {
-  background: var(--bg-page);
+  background: var(--day-disabled-bg);
   border-color: transparent;
-  color: #c6cada;
+  color: var(--day-disabled-text);
   cursor: not-allowed;
   opacity: 1;
 }
 
 .shift-confirm-calendar .rdp-day_button:disabled[data-shift-level] {
-  background: #f0f2f7;
+  background: var(--bg-subtle);
   border-color: var(--border-subtle);
   color: var(--text-secondary);
 }
@@ -404,7 +563,6 @@ button:disabled {
   height: 0.55rem;
   border: 1px solid transparent;
   border-radius: 9999px;
-  box-shadow: 0 0 0 3px rgba(79, 93, 255, 0.05);
 }
 
 .shift-availability-swatch-short {
@@ -429,8 +587,8 @@ button:disabled {
   }
 
   .shift-confirm-calendar {
-    --rdp-day-height: 3.25rem;
-    --rdp-day_button-height: 3rem;
+    --rdp-day-height: 3.5rem;
+    --rdp-day_button-height: 3.25rem;
   }
 
   .shift-calendar .rdp-caption_label,
@@ -453,10 +611,31 @@ button:disabled {
   }
 
   .shift-confirm-calendar .rdp-day {
-    height: 3.25rem;
+    height: 3.5rem;
   }
 
   .shift-confirm-calendar .rdp-day_button {
-    height: 3rem;
+    height: 3.25rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .app-button-primary:active,
+  .app-button-secondary:active,
+  .app-button-danger:active,
+  .app-button-ghost:active,
+  .shift-confirm-calendar .rdp-day_button:active,
+  .shift-preset-button:active,
+  .bottom-mode-button:active {
+    transform: none;
   }
 }

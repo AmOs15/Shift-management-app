@@ -13,10 +13,20 @@ import {
   formatDuration,
   formatDurationHoursCompact,
   getShiftAvailabilityLevel,
+  type ShiftAvailabilityLevel,
 } from "@/lib/shift";
 import type { ShiftPreference } from "@/types/shift";
 
 const weekdayLabels = ["日", "月", "火", "水", "木", "金", "土"] as const;
+
+// Bar length repeats what the fill colour says, so the three steps stay
+// distinguishable without relying on hue alone.
+const levelBarClassNames: Record<ShiftAvailabilityLevel, string> = {
+  none: "w-0",
+  short: "w-2",
+  middle: "w-3.5",
+  long: "w-5",
+};
 
 function ConfirmDayButton({
   durationByDate,
@@ -36,9 +46,9 @@ function ConfirmDayButton({
     <button
       className={[
         className,
-        "flex min-h-12 w-full flex-col items-center justify-center overflow-hidden rounded-[0.875rem] border p-1 text-center leading-tight transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent-500)] sm:min-h-16 sm:p-2",
+        "flex min-h-12 w-full flex-col items-center justify-center overflow-hidden rounded-lg border p-1 text-center leading-tight transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent-500)] sm:min-h-16 sm:p-2",
         hasShift
-          ? "shift-confirm-day"
+          ? ""
           : "border-transparent bg-[var(--bg-card)] text-[var(--text-primary)] hover:bg-[var(--accent-100)]",
       ].join(" ")}
       data-outside-month={isOutsideMonth ? "true" : undefined}
@@ -48,15 +58,18 @@ function ConfirmDayButton({
       data-weekday={day.date.getDay()}
       {...buttonProps}
     >
-      <span className="block w-full text-center text-sm font-black sm:text-base">
+      <span className="font-numeric block w-full text-center text-sm font-bold sm:text-base">
         {day.date.getDate()}
       </span>
       {hasShift ? (
         <>
-          <span className="mt-0.5 hidden w-full truncate text-center text-[11px] font-semibold sm:block">
+          <span className="font-numeric mt-0.5 block w-full truncate text-center text-xs font-bold">
             {formatDurationHoursCompact(durationMinutes)}
           </span>
-          <span className="sr-only">登録済み、合計{formatDuration(durationMinutes)}</span>
+          <span
+            aria-hidden="true"
+            className={`shift-level-bar mt-1 ${levelBarClassNames[availabilityLevel]}`}
+          />
         </>
       ) : null}
     </button>

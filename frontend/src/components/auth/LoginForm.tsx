@@ -73,8 +73,7 @@ export function LoginForm() {
     <main className="flex min-h-screen items-center justify-center bg-[var(--bg-page)] px-4 py-8">
       <Card className="w-full max-w-md p-6">
         <div className="mb-6">
-          <p className="text-sm font-black text-[var(--accent-600)]">シフト希望</p>
-          <h1 className="mt-2 text-2xl font-black tracking-tight text-[var(--text-primary)]">
+          <h1 className="text-2xl font-bold tracking-[-0.02em] text-[var(--text-primary)]">
             シフト希望入力モック
           </h1>
         </div>
@@ -86,7 +85,7 @@ export function LoginForm() {
             </label>
             <input
               autoComplete="name"
-              className="min-h-11 w-full rounded-xl border-0 bg-[var(--bg-page)] px-3 py-2 text-[var(--text-primary)] outline-none transition focus:ring-2 focus:ring-[var(--accent-500)]"
+              className="app-field min-h-11 w-full px-3 py-2"
               id="name"
               name="name"
               onChange={(event) => setName(event.target.value)}
@@ -104,7 +103,7 @@ export function LoginForm() {
             </label>
             <input
               autoComplete="current-password"
-              className="min-h-11 w-full rounded-xl border-0 bg-[var(--bg-page)] px-3 py-2 text-[var(--text-primary)] outline-none transition focus:ring-2 focus:ring-[var(--accent-500)]"
+              className="app-field min-h-11 w-full px-3 py-2"
               id="password"
               name="password"
               onChange={(event) => setPassword(event.target.value)}
@@ -120,10 +119,10 @@ export function LoginForm() {
           </Button>
         </form>
 
-        <div className="mt-6 rounded-2xl bg-[var(--bg-page)] p-4 text-sm text-[var(--text-secondary)]">
+        <div className="mt-6 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] p-4 text-sm text-[var(--text-secondary)]">
           <p className="font-bold text-[var(--text-primary)]">デモ用アカウント</p>
           <p className="mt-2">氏名：{MOCK_USER.name}</p>
-          <p>パスワード：{MOCK_USER.password}</p>
+          <p className="font-numeric">パスワード：{MOCK_USER.password}</p>
         </div>
       </Card>
     </main>
