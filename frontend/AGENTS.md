@@ -4,6 +4,12 @@
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
 <!-- END:nextjs-agent-rules -->
 
+## Repository Guide
+
+このディレクトリがリポジトリ唯一の npm パッケージです。構成・アーキテクチャ・コマンド・禁止事項はリポジトリルートの `AGENTS.md` にまとめてあります。
+
+@../AGENTS.md
+
 ## Project Verification Preference
 
 Do not run tests or lint commands unless the user explicitly asks for them.
